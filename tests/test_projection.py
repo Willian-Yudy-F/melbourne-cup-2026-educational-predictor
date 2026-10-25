@@ -24,6 +24,12 @@ def test_probabilities_sum_to_one_and_rank_favourite_first() -> None:
     assert output["market_baseline_probability"].sum() == pytest.approx(1.0)
     assert output["educational_scenario_probability"].sum() == pytest.approx(1.0)
     assert output.iloc[0]["horse"] == "A"
+    assert output.iloc[0]["scenario_fair_odds"] == pytest.approx(
+        1 / output.iloc[0]["educational_scenario_probability"]
+    )
+    assert output.iloc[0]["minimum_odds_for_10pct_margin"] > output.iloc[0][
+        "scenario_fair_odds"
+    ]
 
 
 def test_invalid_odds_are_rejected() -> None:

@@ -79,6 +79,13 @@ def build_projection(
     )
     raw_scenario = raw_market * frame["weight_factor"] * frame["market_movement_factor"] * frame["ballot_factor"]
     frame["educational_scenario_probability"] = raw_scenario / raw_scenario.sum()
+    frame["scenario_fair_odds"] = 1.0 / frame["educational_scenario_probability"]
+    frame["expected_return_at_recorded_odds"] = (
+        frame["educational_scenario_probability"] * frame["current_decimal_odds"] - 1.0
+    )
+    frame["minimum_odds_for_10pct_margin"] = 1.10 / frame[
+        "educational_scenario_probability"
+    ]
     frame["rank"] = frame["educational_scenario_probability"].rank(
         method="first", ascending=False
     ).astype(int)
@@ -91,6 +98,9 @@ def build_projection(
         "ballot_exempt",
         "market_baseline_probability",
         "educational_scenario_probability",
+        "scenario_fair_odds",
+        "expected_return_at_recorded_odds",
+        "minimum_odds_for_10pct_margin",
         "weight_factor",
         "market_movement_factor",
         "ballot_factor",

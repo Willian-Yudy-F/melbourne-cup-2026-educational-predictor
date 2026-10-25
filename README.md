@@ -1,56 +1,103 @@
-# Melbourne Cup 2026 — Educational Probability Project
+# Melbourne Cup 2026 Educational Predictor
 
-Projeto educacional em Python para transformar um snapshot público de candidatos e
-cotações do Melbourne Cup 2026 em probabilidades reproduzíveis e auditáveis.
+An English-language Python project that turns a dated public snapshot of Melbourne
+Cup 2026 contenders and prices into reproducible, auditable probabilities.
 
-> **Não é dica de aposta.** Leia o [DISCLAIMER.md](DISCLAIMER.md). O campo final de até
-> 24 cavalos e as barreiras serão definidos em 31 de outubro de 2026. O snapshot usado
-> aqui é anterior ao campo final e foi observado em 22 de outubro de 2026.
+> **This is a learning project, not betting advice.** Read
+> [DISCLAIMER.md](DISCLAIMER.md). The final field of up to 24 runners and the barrier
+> draw are due on 31 October 2026. This analysis uses a pre-final-field snapshot from
+> 22 October 2026.
 
-## Projeção provisória
+## Results
 
-As tabelas geradas ficam em:
+| Rank | Horse | Market baseline | Educational scenario | Scenario fair odds | Recorded odds | Expected return |
+|---:|---|---:|---:|---:|---:|---:|
+| 1 | Point Of Law | 11.19% | **13.58%** | **$7.36** | $6 | **-18.5%** |
+| 2 | James J Braddock | 6.11% | 5.98% | $16.73 | $11 | -34.2% |
+| 3 | Trustyourinstinct | 6.11% | 5.76% | $17.37 | $11 | -36.7% |
+| 4 | Defiantly | 6.11% | 5.56% | $17.98 | $11 | -38.8% |
+| 5 | Saint George | 4.48% | 4.91% | $20.38 | $15 | -26.4% |
+| 6 | Stinger Glass | 5.17% | 4.85% | $20.61 | $13 | -36.9% |
+| 7 | Enfjaar | 4.48% | 4.82% | $20.75 | $15 | -27.7% |
+| 8 | Shockletz | 4.48% | 4.72% | $21.17 | $15 | -29.1% |
+| 9 | Aeliana | 4.48% | 3.74% | $26.70 | $15 | -43.8% |
+| 10 | Zakouma | 3.73% | 3.68% | $27.16 | $18 | -33.7% |
+
+The complete generated table is available in:
 
 - [`outputs/melbourne_cup_2026_projection.csv`](outputs/melbourne_cup_2026_projection.csv)
 - [`outputs/melbourne_cup_2026_projection.md`](outputs/melbourne_cup_2026_projection.md)
 
-O ranking principal é o **cenário educacional**, não uma recomendação. A coluna
-`market_baseline_probability` é a referência mais neutra: probabilidade implícita das
-cotações, normalizada entre os candidatos acompanhados.
+## Model selection and strategy
 
-## O que usamos
+### Winner selection: Point Of Law
+
+Point Of Law ranks first because the snapshot combines:
+
+- the strongest recorded market price;
+- a major move from $18 to $6;
+- a low carried weight of 51kg;
+- ballot exemption after winning the Geelong Cup.
+
+### Strategy recommendation: no bet at $6
+
+The educational scenario assigns Point Of Law a 13.58% win probability. Its reciprocal
+is fair decimal odds of approximately $7.36. A $6 price is shorter than the model's fair
+price:
+
+```text
+expected return = probability × decimal odds - 1
+                = 0.1358 × 6 - 1
+                = -0.185, or -18.5%
+```
+
+Therefore, the project selects Point Of Law as the most likely winner but does **not**
+recommend a wager at the recorded price. The educational strategy is:
+
+1. Wait for the final field, veterinary checks and barrier draw on 31 October.
+2. Refresh prices and rerun the model.
+3. Require the offered price to exceed model fair odds by a safety margin.
+4. With a 10% margin, Point Of Law would require approximately $8.10 or higher.
+5. If no runner clears its required price, record a **no-bet** decision.
+
+This price discipline matters: selecting the most likely winner and finding a positive
+expected-value price are different tasks.
+
+## What we used
 
 - Python 3.11+
-- `pandas` para ingestão, validação e tabelas
-- `numpy` para normalização probabilística
-- `pytest` para testes de integridade
-- Git e GitHub para versionamento e documentação
-- Fontes públicas da VRC, Racing Victoria e um snapshot agregado de cotações
+- `pandas` for ingestion, validation and tabular outputs
+- `numpy` for probability normalization
+- `pytest` for integrity tests
+- Git and GitHub for versioning and documentation
+- Public information from the VRC, Racing Victoria and a dated market snapshot
 
-Este repositório é uma adaptação responsável do pipeline maior de previsão de corridas.
-Não aplicamos o modelo XGBoost treinado em dados sintéticos aos cavalos reais: isso
-produziria uma falsa sensação de precisão. O código mantém o mesmo desenho de produção
-— snapshot datado, validação, features explícitas, inferência e artefatos versionados —
-mas usa uma baseline transparente enquanto não há um dataset histórico real licenciado.
+This repository responsibly adapts the larger horse-racing prediction pipeline. We do
+not apply an XGBoost model trained on synthetic data to real horses, because that would
+create false precision. The repository keeps the production structure — dated snapshot,
+validation, explicit features, inference and versioned outputs — while using a transparent
+baseline until a licensed historical dataset is available.
 
-## Como fizemos
+## How it works
 
-1. Registramos um snapshot dos candidatos com nome, treinador, peso, cotação atual,
-   cotação anterior e situação de vaga garantida.
-2. Validamos duplicatas, valores ausentes, cotações maiores que 1 e pesos plausíveis.
-3. Calculamos a baseline `1 / decimal_odds` e removemos a margem normalizando a soma.
-4. Criamos um cenário didático com ajustes deliberadamente pequenos:
-   - peso: `exp(-0.018 × (peso - peso_médio))`;
-   - movimento: `(cotação_anterior / cotação_atual)^0.15`, limitado a `[0.85, 1.15]`;
-   - vaga garantida: multiplicador `1.03`.
-5. Normalizamos novamente para que as probabilidades somem 100%.
-6. Exportamos CSV e Markdown e testamos os invariantes.
+1. Store a point-in-time snapshot containing horse, trainer, weight, current price,
+   previous price and ballot-exemption status.
+2. Validate duplicates, missing values, odds and plausible weights.
+3. Calculate `1 / decimal_odds` and normalize the values to form a market baseline.
+4. Build an educational sensitivity scenario using deliberately small adjustments:
+   - weight: `exp(-0.018 × (weight - average_weight))`;
+   - price movement: `(previous_odds / current_odds)^0.15`, capped to `[0.85, 1.15]`;
+   - ballot exemption: multiplier `1.03`.
+5. Normalize the adjusted scores to 100%.
+6. Calculate model fair odds, expected return at the recorded price and the price required
+   for a 10% safety margin.
+7. Export CSV and Markdown reports and test the invariants.
 
-Esses coeficientes são hipóteses didáticas, não parâmetros aprendidos. O mercado já
-incorpora parte dessas informações, portanto existe risco de dupla contagem. A saída
-mostra baseline e cenário lado a lado para tornar isso visível.
+These coefficients are educational hypotheses, not learned parameters. The market
+already incorporates some of this information, so double counting is possible. Both the
+market baseline and adjusted scenario are reported to make that limitation visible.
 
-## Executar
+## Run locally
 
 ```bash
 python -m venv .venv
@@ -60,40 +107,33 @@ python main.py
 pytest -q
 ```
 
-Para usar outro snapshot:
-
-```bash
-python main.py --input data/melbourne_cup_2026_candidates.csv --output-dir outputs
-```
-
-## Estrutura
+## Project structure
 
 ```text
-data/                         snapshot versionado
-src/melbourne_cup/            validação e projeção
-outputs/                      tabelas geradas
-tests/                        testes dos invariantes
-main.py                       CLI
-METHODOLOGY.md                detalhes e limitações
-DISCLAIMER.md                 finalidade educacional
+data/                         versioned market snapshot
+src/melbourne_cup/            validation and projection logic
+outputs/                      generated result tables
+tests/                        probability and validation tests
+main.py                       command-line interface
+METHODOLOGY.md                assumptions and limitations
+DISCLAIMER.md                 educational-use disclaimer
 ```
 
-## Fontes e data de corte
+## Sources and cutoff
 
-- [Victoria Racing Club — 58 horses remain, 13 Oct 2026](https://www.vrc.com.au/latest-news/58-horses-remain-in-the-race-for-cup-glory/)
-- [VRC — Point Of Law earns a Golden Ticket, 21 Oct 2026](https://www.vrc.com.au/latest-news/point-of-law-earns-golden-ticket-into-the-2026-lexus-melbourne-cup/)
+- [Victoria Racing Club — 58 horses remain, 13 October 2026](https://www.vrc.com.au/latest-news/58-horses-remain-in-the-race-for-cup-glory/)
+- [VRC — Point Of Law earns a Golden Ticket, 21 October 2026](https://www.vrc.com.au/latest-news/point-of-law-earns-golden-ticket-into-the-2026-lexus-melbourne-cup/)
 - [Racing Victoria — Feature Race Conditions and Order of Entry](https://www.racingvictoria.com.au/racing/feature-race-conditions)
-- [Race.com.au — market snapshot and weights, 22 Oct 2026](https://race.com.au/melbourne-cup/)
+- [Race.com.au — recorded market and weights, 22 October 2026](https://race.com.au/melbourne-cup/)
 
-As cotações são voláteis e foram transcritas apenas para este exercício. Não há coleta
-automática de sites de apostas, nem afiliação com as fontes. Consulte sempre as fontes
-oficiais para aceitações e condições da corrida.
+Prices are volatile and were transcribed only for this exercise. The project has no
+affiliation with these sources and does not automatically scrape betting websites.
 
-## Próximos passos técnicos
+## Next technical steps
 
-- Atualizar o snapshot após o campo final e sorteio das barreiras em 31 de outubro.
-- Ingerir resultados históricos reais com licença adequada.
-- Usar validação temporal por ano e calibração fora da amostra.
-- Adicionar forma recente, distância, pista, jóquei e handicap sem vazamento temporal.
-- Publicar intervalos de incerteza e relatório de calibração.
+- Refresh the dataset after final acceptances and the barrier draw on 31 October.
+- Acquire properly licensed historical race results.
+- Use year-based temporal validation and out-of-sample calibration.
+- Add recent form, distance, track, jockey and handicap features without temporal leakage.
+- Publish uncertainty intervals, Brier score, log-loss and a calibration report.
 
