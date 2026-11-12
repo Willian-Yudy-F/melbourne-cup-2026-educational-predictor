@@ -30,6 +30,19 @@ class ProjectionConfig:
     ballot_exempt_multiplier: float = 1.03
 
 
+def _validate_config(config: ProjectionConfig) -> None:
+    if config.weight_coefficient < 0:
+        raise ValueError("weight_coefficient must be non-negative")
+    if config.movement_exponent < 0:
+        raise ValueError("movement_exponent must be non-negative")
+    if config.movement_floor <= 0:
+        raise ValueError("movement_floor must be greater than zero")
+    if config.movement_ceiling < config.movement_floor:
+        raise ValueError("movement_ceiling must be greater than or equal to movement_floor")
+    if config.ballot_exempt_multiplier <= 0:
+        raise ValueError("ballot_exempt_multiplier must be greater than zero")
+
+
 def validate_snapshot(frame: pd.DataFrame) -> pd.DataFrame:
     missing = REQUIRED_COLUMNS.difference(frame.columns)
     if missing:
@@ -37,7 +50,13 @@ def validate_snapshot(frame: pd.DataFrame) -> pd.DataFrame:
     result = frame.copy()
     if result.empty:
         raise ProjectionDataError("Snapshot is empty")
-    if result["horse"].duplicated().any():
+    if result[list(REQUIRED_COLUMNS)].isna().any().any():
+        raise ProjectionDataError("Required fields cannot be empty")
+    for column in ["horse", "trainer"]:
+        result[column] = result[column].astype(str).str.strip()
+        if result[column].eq("").any():
+            raise ProjectionDataError(f"{column} cannot be blank")
+    if result["horse"].str.casefold().duplicated().any():
         raise ProjectionDataError("Every horse must appear exactly once")
     numeric = ["weight_kg", "current_decimal_odds", "previous_decimal_odds"]
     result[numeric] = result[numeric].apply(pd.to_numeric, errors="raise")
@@ -63,6 +82,7 @@ def build_projection(
     config: ProjectionConfig = ProjectionConfig(),
 ) -> pd.DataFrame:
     """Return market and transparent educational scenario probabilities."""
+    _validate_config(config)
     frame = validate_snapshot(snapshot)
     raw_market = 1.0 / frame["current_decimal_odds"]
     frame["market_baseline_probability"] = raw_market / raw_market.sum()

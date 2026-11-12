@@ -25,13 +25,15 @@ def parse_args() -> argparse.Namespace:
 
 def render_markdown(projection: pd.DataFrame) -> str:
     table = projection.copy()
+    snapshot_at = table["snapshot_at"].iloc[0]
+    snapshot_label = snapshot_at.strftime("%-d %B %Y")
     table["market"] = table["market_baseline_probability"].map(lambda value: f"{value:.2%}")
     table["scenario"] = table["educational_scenario_probability"].map(lambda value: f"{value:.2%}")
     table["expected_return"] = table["expected_return_at_recorded_odds"].map(lambda value: f"{value:.1%}")
     rows = [
         "# Melbourne Cup 2026 — provisional educational projection",
         "",
-        "Snapshot: 22 October 2026. Final field and barriers were not yet confirmed.",
+        f"Snapshot: {snapshot_label}. Final field and barriers were not yet confirmed.",
         "This is a learning exercise, not betting advice.",
         "",
         "| Rank | Horse | Trainer | Weight | Odds | Market baseline | Educational scenario | Fair odds | Expected return | Exempt |",

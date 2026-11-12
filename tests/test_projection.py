@@ -7,7 +7,11 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
-from melbourne_cup.projection import ProjectionDataError, build_projection
+from melbourne_cup.projection import (
+    ProjectionConfig,
+    ProjectionDataError,
+    build_projection,
+)
 
 
 def sample() -> pd.DataFrame:
@@ -37,4 +41,40 @@ def test_invalid_odds_are_rejected() -> None:
     frame.loc[0, "current_decimal_odds"] = 1.0
     with pytest.raises(ProjectionDataError, match="greater than 1"):
         build_projection(frame)
+
+
+@pytest.mark.parametrize("column", ["horse", "trainer"])
+def test_blank_text_fields_are_rejected(column: str) -> None:
+    frame = sample()
+    frame.loc[0, column] = "  "
+    with pytest.raises(ProjectionDataError, match=f"{column} cannot be blank"):
+        build_projection(frame)
+
+
+def test_horse_names_are_unique_ignoring_case_and_whitespace() -> None:
+    frame = sample()
+    frame.loc[1, "horse"] = " a "
+    with pytest.raises(ProjectionDataError, match="exactly once"):
+        build_projection(frame)
+
+
+def test_invalid_boolean_is_rejected() -> None:
+    frame = sample()
+    frame["ballot_exempt"] = frame["ballot_exempt"].astype(object)
+    frame.loc[0, "ballot_exempt"] = "unknown"
+    with pytest.raises(ProjectionDataError, match="true or false"):
+        build_projection(frame)
+
+
+def test_mixed_snapshot_times_are_rejected() -> None:
+    frame = sample()
+    frame.loc[1, "snapshot_at"] = "2026-10-23T01:06:00Z"
+    with pytest.raises(ProjectionDataError, match="one point-in-time snapshot"):
+        build_projection(frame)
+
+
+def test_invalid_config_is_rejected() -> None:
+    config = ProjectionConfig(movement_floor=1.2, movement_ceiling=1.1)
+    with pytest.raises(ValueError, match="movement_ceiling"):
+        build_projection(sample(), config)
 
