@@ -1,5 +1,12 @@
 # Methodology and limitations
 
+## Point-in-time rule
+
+The repository preserves the information available at the 22 October 2026 cutoff.
+Later acceptances, barriers, veterinary information and the race result must not be
+added to the input snapshot. A future post-race evaluation should use a separate file
+so the original decision can be reproduced without hindsight.
+
 ## Outputs
 
 The project deliberately reports two distributions.
@@ -19,7 +26,7 @@ It is a sensitivity exercise, not a fitted machine-learning model.
 
 ## Major limitations
 
-- Snapshot date: 22 October 2026; final field is due 31 October.
+- Snapshot date: 22 October 2026; the final field was not known at the cutoff.
 - The file tracks quoted contenders, not every nomination.
 - All-in prices include the risk that a horse does not start.
 - Barriers and most final jockey bookings were not available.

@@ -1,12 +1,21 @@
 # Melbourne Cup 2026 Educational Predictor
 
+[![CI](https://github.com/Willian-Yudy-F/melbourne-cup-2026-educational-predictor/actions/workflows/ci.yml/badge.svg)](https://github.com/Willian-Yudy-F/melbourne-cup-2026-educational-predictor/actions/workflows/ci.yml)
+
 An English-language Python project that turns a dated public snapshot of Melbourne
 Cup 2026 contenders and prices into reproducible, auditable probabilities.
 
-> **This is a learning project, not betting advice.** Read
-> [DISCLAIMER.md](DISCLAIMER.md). The final field of up to 24 runners and the barrier
-> draw are due on 31 October 2026. This analysis uses a pre-final-field snapshot from
-> 22 October 2026.
+> **Historical educational snapshot — not betting advice.** Read
+> [DISCLAIMER.md](DISCLAIMER.md). This repository deliberately preserves information
+> available on 22 October 2026, before the final field and barrier draw. Later race
+> information is excluded so the exercise remains a genuine point-in-time analysis.
+
+## Project status
+
+The pre-race model is complete and kept as a reproducible portfolio case study. It is
+not a live tipping service and does not update prices automatically. The useful output
+is the workflow: validate a dated dataset, make assumptions visible, generate auditable
+probabilities and separate a likely winner from a positive-value decision.
 
 ## Results
 
@@ -28,7 +37,7 @@ The complete generated table is available in:
 - [`outputs/melbourne_cup_2026_projection.csv`](outputs/melbourne_cup_2026_projection.csv)
 - [`outputs/melbourne_cup_2026_projection.md`](outputs/melbourne_cup_2026_projection.md)
 
-## Model selection and strategy
+## Pre-race model selection and strategy
 
 ### Winner selection: Point Of Law
 
@@ -51,21 +60,23 @@ expected return = probability × decimal odds - 1
                 = -0.185, or -18.5%
 ```
 
-Therefore, the project selects Point Of Law as the most likely winner but does **not**
-recommend a wager at the recorded price. The educational strategy is:
+Therefore, the project selected Point Of Law as the most likely winner in this dated
+scenario but did **not** identify value at the recorded price. The documented pre-race
+workflow was:
 
-1. Wait for the final field, veterinary checks and barrier draw on 31 October.
-2. Refresh prices and rerun the model.
+1. Wait for the final field, veterinary checks and barrier draw.
+2. Refresh prices before any new run of the model.
 3. Require the offered price to exceed model fair odds by a safety margin.
-4. With a 10% margin, Point Of Law would require approximately $8.10 or higher.
-5. If no runner clears its required price, record a **no-bet** decision.
+4. With a 10% margin, Point Of Law required approximately $8.10 or higher in this
+   snapshot.
+5. If no runner cleared its required price, record a **no-bet** decision.
 
 This price discipline matters: selecting the most likely winner and finding a positive
 expected-value price are different tasks.
 
 ## What we used
 
-- Python 3.11+
+- Python 3.11 or 3.13 (both exercised in CI)
 - `pandas` for ingestion, validation and tabular outputs
 - `numpy` for probability normalization
 - `pytest` for integrity tests
@@ -126,12 +137,18 @@ DISCLAIMER.md                 educational-use disclaimer
 - [Racing Victoria — Feature Race Conditions and Order of Entry](https://www.racingvictoria.com.au/racing/feature-race-conditions)
 - [Race.com.au — recorded market and weights, 22 October 2026](https://race.com.au/melbourne-cup/)
 
+The official VRC reports confirm the 13 October second-acceptance context and Point Of
+Law's 21 October Golden Ticket. Racing Victoria lists the race conditions and the later
+31 October order of entry; those later details are not used as model inputs.
+
 Prices are volatile and were transcribed only for this exercise. The project has no
-affiliation with these sources and does not automatically scrape betting websites.
+affiliation with these sources and does not automatically scrape betting websites. The
+Race.com.au link documents the recorded market source but is not an official racing-body
+source.
 
-## Next technical steps
+## Possible extensions
 
-- Refresh the dataset after final acceptances and the barrier draw on 31 October.
+- Add a separate post-race evaluation dataset without rewriting the original snapshot.
 - Acquire properly licensed historical race results.
 - Use year-based temporal validation and out-of-sample calibration.
 - Add recent form, distance, track, jockey and handicap features without temporal leakage.
